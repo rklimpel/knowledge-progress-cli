@@ -40,7 +40,7 @@ def open_subject():
 		os.makedirs('./data/')
 	db = TinyDB('./data/database.json', indent=4)
 	available_tables = db.tables()
-	for 
+	#only open available subjects
 	table = db.table(subject.lower()).all()
 	db.close()
 	return subject
@@ -60,6 +60,7 @@ def add_topic(subject):
 def show_progress(subject):
 	db = TinyDB('./data/database.json', indent=4)
 	table = db.table(subject).all()
+	print("your knowledge progress for all topics in " + subject + ":")
 	for entry in table:
 		name_filler = " "*(30-len(entry["topic"]))
 		progress_pipes = u"\u2586"*(entry["progress"]-2)
@@ -67,14 +68,22 @@ def show_progress(subject):
 		print(entry["topic"] + ": " + name_filler + "|" + progress_pipes + progress_spaces + "|")
 
 def track_progress(subject):
-	entry = Query()
 	db = TinyDB('./data/database.json', indent=4)
 	table = db.table(subject)
 	topic = input("Which topic do you want to update?\n => ")
-	progress = input("Whats your progress?\n => ")
-	timestamp = int(round(time.time() * 1000))
-	table.upsert({"progress": int(progress),"topic": topic,"timestamp": timestamp},entry.topic==topic)
-	print("Updated.")
+
+	if not table.search(Query().topic==topic):
+		create_answer = input("This topic does not exists, do you want to create it?\n => ")
+		if create_answer=="y" or create_answer=="yes":
+			progress = input("Whats your progress?\n => ")
+			timestamp = int(round(time.time() * 1000))
+			table.insert({"progress": int(progress),"topic": topic,"timestamp": timestamp})
+			print("topic created and progress tracked.")
+	else:
+		progress = input("Whats your progress?\n => ")
+		timestamp = int(round(time.time() * 1000))
+		table.update({"progress": int(progress),"topic": topic,"timestamp": timestamp},Query().topic==topic)
+		print("progress updated.")
 
 if __name__== "__main__":
 	main()
