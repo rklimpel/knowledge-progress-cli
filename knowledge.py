@@ -10,37 +10,45 @@ def main():
 	while(True):
 		print("="*60)
 		print("you are in subject \"" + subject + "\". what do you want to do?")
-		print("(0) show current progress for the subject")
-		print("(2) track progress of a topic")
-		print("(3) change the subject")
-		print("(4) close the application")
+		print("  (show)  show current progress for the subject")
+		print(" (track)  track progress of a topic")
+		print("(switch)  change the subject")
+		print("  (exit)  close the application")
 		arg = input(" => ")
-		if arg == "0":
+		if arg == "show":
 			print("="*60)
 			show_progress(subject)
-		elif arg == "1":
-			print("="*60)
-			add_topic(subject)
-		elif arg == "2":
+		elif arg == "track":
 			print("="*60)
 			track_progress(subject)
-		elif arg == "3":
+		elif arg == "switch":
 			print("="*60)
 			subject = change_subject()
-		elif arg == "4":
+		elif arg == "exit":
 			print("="*60)
 			exit()
+		else:
+			print("error: please use one of the specified commands")
 
 def open_subject():
 	print("="*60)
 	print("hello user.")
-	subject = input("which subject?\n => ")
-	print("You choosed \"" + subject + ".\"")
 	if not os.path.exists('./data/'):
 		os.makedirs('./data/')
-	db = TinyDB('./data/database.json', indent=4)
+	db = TinyDB("./data/database.json", indent=4)
 	available_tables = db.tables()
-	#only open available subjects
+	i = 0
+	subject_order = {}
+	print("choose one of your subjects:")
+	for subject in available_tables:
+		if subject != "_default" and subject != "":
+			print("("+str(i)+") " + subject)
+			subject_order[subject] = i
+			i += 1
+	subject_number = input(" => ")
+	for sub in subject_order:
+		if subject_order[sub] == int(subject_number):
+			subject = sub
 	table = db.table(subject.lower()).all()
 	db.close()
 	return subject
@@ -49,7 +57,7 @@ def add_topic(subject):
 	topic = input("Give me the name of the new topic you want to add to " + subject + "\n => ")
 	db = TinyDB('./data/database.json', indent=4)
 	timestamp = int(round(time.time() * 1000))
-	table = db.table(subject)
+	table = db.table(subject.lower())
 	table.insert({
 			"topic" : topic,
 			"timestamp" : timestamp, 
